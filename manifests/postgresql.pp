@@ -49,7 +49,6 @@ class powerdns::postgresql(
     owner   => root,
     group   => root,
     mode    => '0600',
-    backup  => '.bak',
     content => template('powerdns/pdns.pgsql.local.erb'),
     notify  => Service['pdns'],
     require => Package[$powerdns::params::package],
