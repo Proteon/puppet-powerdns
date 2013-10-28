@@ -13,9 +13,6 @@
 #
 define powerdns::config($value, $ensure='present') {
 
-  file {'/etc/powerdns/pdns.d':
-      ensure => directory
-  }
 
   file { "/etc/powerdns/pdns.d/${name}.conf":
     ensure  => $ensure,

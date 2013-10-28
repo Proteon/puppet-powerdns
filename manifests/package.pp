@@ -25,4 +25,8 @@ class powerdns::package(
     source   => $package_source,
     provider => $package_provider
   }
+
+  file {'/etc/powerdns/pdns.d':
+      ensure => directory
+  }
 }
