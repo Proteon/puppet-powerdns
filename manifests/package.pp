@@ -33,7 +33,7 @@ class powerdns::package(
     file {"/etc/powerdns/pdns.conf":
         ensure  => file,
         content => template('powerdns/pdns.conf.erb'),
-        require => [File['/etc/powerdns/pdns.d'],Class['powerdns::package']],
+        require => [File['/etc/powerdns/pdns.d'],Package[$package],
         notify  => Class['powerdns::service'],
     }
 }
