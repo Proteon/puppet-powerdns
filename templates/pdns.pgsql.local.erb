@@ -6,11 +6,15 @@
 launch=gpgsql
 
 # gpgsql parameters
-gpgsql-host=<%= @host %>
-gpgsql-port=<%= @port %>
+<% if @socket %>
+    gpgsql-socket=<%=@socket%>
+<% else %>
+    gpgsql-host=<%= @host %>
+    gpgsql-port=<%= @port %>
+<% end -%>
 gpgsql-dbname=<%= @dbname %>
 gpgsql-user=<%= @user %>
 gpgsql-password=<%= @password %>
 <% if @dnssec%>
 gpgsql-dnssec
-<%end-%>
+<%end-%> 

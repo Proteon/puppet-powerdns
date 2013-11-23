@@ -7,6 +7,7 @@
 # password - which password to use with user
 # host     - host to connect to
 # port     - port to connect to
+# socket   - socket to use
 # dbname   - which database to use
 # dnssec   - enable or disable dnssec either yes or no
 #
@@ -17,6 +18,7 @@ class powerdns::postgresql(
   $user     = '',
   $password = '',
   $host     = 'localhost',
+  $socket   = undef,
   $port     = '5432',
   $dbname   = 'pdns',
   $dnssec   = 'yes'
@@ -37,29 +39,31 @@ class powerdns::postgresql(
     default => $powerdns::params::package_provider
   }
 
-  package { $package:
-    ensure   => $ensure,
-    require  => Package[$powerdns::params::package],
-    provider => $package_provider,
-    source   => $package_source
+  if $source != 'static' {
+      package { $package:
+          ensure   => $ensure,
+          require  => Package[$powerdns::params::package],
+          provider => $package_provider,
+          source   => $package_source
+      }
   }
 
   file { $powerdns::params::postgresql_cfg_path:
-    ensure  => $ensure,
-    owner   => root,
-    group   => root,
-    mode    => '0600',
-    content => template('powerdns/pdns.pgsql.local.erb'),
-    notify  => Service['pdns'],
-    require => Package[$powerdns::params::package],
+      ensure  => $ensure,
+      owner   => root,
+      group   => root,
+      mode    => '0600',
+      content => template('powerdns/pdns.pgsql.local.erb'),
+      notify  => Service['pdns'],
+      require => Package[$powerdns::params::package],
   }
 
   file { '/opt/powerdns_schema.sql':
-    ensure  => $ensure,
-    owner   => root,
-    group   => root,
-    mode    => '0644',
-    source  => $postgres_schema
+      ensure  => $ensure,
+      owner   => root,
+      group   => root,
+      mode    => '0644',
+      source  => $postgres_schema
   }
 
 }
