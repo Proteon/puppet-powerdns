@@ -7,7 +7,8 @@
 class powerdns::package(
     $package = $powerdns::params::package,
     $ensure = 'present',
-    $source = ''
+    $source = '',
+    $provider = ''
 ) inherits powerdns::params {
 
     $package_source = $source ? {
@@ -15,7 +16,7 @@ class powerdns::package(
         default => $source
     }
 
-    $package_provider = $source ? {
+    $package_provider = $provider ? {
         ''      => undef,
         default => $powerdns::params::package_provider
     }
