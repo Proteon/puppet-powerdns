@@ -21,7 +21,8 @@ class powerdns::package(
         default => $powerdns::params::package_provider
     }
 
-    package { $package:
+    package { $powerdns::params::packag:
+        name     => $package
         ensure   => $ensure,
         source   => $package_source,
         provider => $package_provider
