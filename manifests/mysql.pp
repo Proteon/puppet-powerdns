@@ -41,7 +41,7 @@ class powerdns::mysql(
 
   file { $powerdns::params::mysql_cfg_path:
     ensure  => $ensure,
-    owner   => root,
+    owner   => pdns,
     group   => root,
     mode    => '0600',
     backup  => '.bak',
