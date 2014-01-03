@@ -5,3 +5,5 @@ metadata.json
 spec/fixtures/modules/*
 !spec/fixtures/modules/powerdns
 *.lock
+
+.project
