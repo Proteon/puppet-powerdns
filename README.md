@@ -60,6 +60,21 @@ This will install the mysql backend for powerdns:
 
 The `dnssec` value can be either 'yes' or 'no'. Default is 'yes'.
 
+
+#### powerdns recurser
+
+    class {'powerdns::recurser':
+      allow_from => '127.0.0.1',
+    }
+    
+#### powerdns::recurser::option
+
+See: http://doc.powerdns.com/html/built-in-recursor.html for a full list of configuration options
+
+    powerdns::recurser::option { 'log-common-errors':
+      value  => 'off',
+    }
+
 ## Testing
 
     gem install bundler
