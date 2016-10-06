@@ -5,39 +5,47 @@
 #    include powerdns::package
 #
 class powerdns::package(
-    $package = $powerdns::params::package,
-    $ensure = 'present',
-    $source = '',
-    $provider = ''
+  $package      = $powerdns::params::package,
+  $ensure       = 'present',
+  $source       = '',
+  $provider     = '',
+  $purge_config = false,
 ) inherits powerdns::params {
 
-    $package_source = $source ? {
-        ''      => undef,
-        default => $source
-    }
+  $package_source = $source ? {
+    ''      => undef,
+    default => $source
+  }
 
-    $package_provider = $provider ? {
-        ''      => undef,
-        default => $powerdns::params::package_provider
-    }
+  $package_provider = $provider ? {
+    ''      => undef,
+    default => $powerdns::params::package_provider
+  }
 
-    package { $powerdns::params::package:
-        name     => $package,
-        ensure   => $ensure,
-        source   => $package_source,
-        provider => $package_provider
-    }
+  package { $package:
+    ensure   => $ensure,
+    source   => $package_source,
+    provider => $package_provider
+  }
 
-    file {'/etc/powerdns/pdns.d':
-        require => Package[$package],
-        owner   => 'pdns',
-        ensure  => directory
-    }
-    file {"/etc/powerdns/pdns.conf":
-        ensure  => file,
-        owner   => 'pdns',
-        content => template('powerdns/pdns.conf.erb'),
-        require => [File['/etc/powerdns/pdns.d'],Package[$package]],
-        notify  => Class['powerdns::service'],
-    }
+  file { $powerdns::params::cfg_include_path :
+    ensure  => directory,
+    owner   => 'pdns',
+    group   => 'root',
+    mode    => '0755',
+    recurse => $purge_config,
+    purge   => $purge_config,
+    require => Package[$package],
+  }
+
+  $pdns_config = hiera('pdns::config','')
+  file { "$powerdns::params::cfg_include_path/authoritive.conf":
+    ensure  => present,
+    content => template('powerdns/authoritive-conf.erb'),
+    owner   => 'pdns',
+    group   => 'root',
+    require => Package[$package],
+    notify  => Class['::powerdns::service']
+  }
+
 }

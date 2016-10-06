@@ -1,53 +1,86 @@
+# Public: Install the powerdns-recursor server
 #
-# See http://doc.powerdns.com/html/built-in-recursor.html for configuration options
+# package - Name of the package to install
+# ensure  - Ensure powerdns to be present or absent
+# source  - Source package of powerdns server,
+#           default is package provider
 #
-class powerdns::recursor (
-  $allow_from    = $powerdns::recursor::params::allow_from,
-  $local_address = $powerdns::recursor::params::local_address,
-  $local_port    = $powerdns::recursor::params::local_port,
-  $setgid        = $powerdns::recursor::params::setgid,
-  $setuid        = $powerdns::recursor::params::setuid,
-  $quiet         = $powerdns::recursor::params::quiet,
-  $ensure        = 'present') inherits powerdns::recursor::params {
-  include powerdns
+# configs used into the template:
+#   forward_zones
+#   forward_zones_recurse
+#   local_address
+#   local_port
+#   log_common_errors
+#   logging_facility
+#   max_negative_ttl
+#   quiet
+#   setgid
+#   setuid
+#   trace
+#
+# Example:
+#
+#    # Include with default
+#    include powerdns::recursor
+#
+class powerdns::recursor(
+  $package               = $powerdns::params::package_recursor,
+  $ensure                = 'present',
+  $source                = '',
+  $forward_zones         = undef,
+  $forward_zones_recurse = undef,
+  $local_address         = '127.0.0.1',
+  $local_port            = '53',
+  $log_common_errors     = 'yes',
+  $logging_facility      = undef,
+  $max_negative_ttl      = undef,
+  $quiet                 = 'yes',
+  $setgid                = 'pdns',
+  $setuid                = 'pdns',
+  $trace                 = 'off',
 
-  package { 'pdns-recursor':
-    
-    ensure => $ensure ? {
-      'present' => held,
-      'absent'  => purged,
-      default   => held,
-    },  
-    provider  => 'aptitude',
+) inherits powerdns::params {
+
+  require ::powerdns
+
+  $package_source = $source ? {
+    ''      => undef,
+    default => $source
   }
 
-  if ($ensure == 'present') {
-    
-    Ini_setting {
-      path    => "/etc/powerdns/recursor.conf",
-      section => '',
-    }
+  $package_provider = $source ? {
+    ''      => undef,
+    default => $powerdns::params::package_provider
+  }
 
-    powerdns::recursor::option { 'allow-from': value => $allow_from }
+  package { $package:
+    ensure   => $ensure,
+    require  => Package[$powerdns::params::package],
+    provider => $package_provider,
+    source   => $package_source
+  }
 
-    powerdns::recursor::option { 'local-address': value => $local_address }
+  file { $powerdns::params::recursor_cfg_path:
+    ensure  => $ensure,
+    owner   => root,
+    group   => root,
+    mode    => '0600',
+    content => template('powerdns/recursor.conf.erb'),
+    notify  => Service['pdns-recursor'],
+    require => Package[$package],
+  }
 
-    powerdns::recursor::option { 'local-port': value => $local_port }
+  $ensure_service = $ensure ? {
+    'present' => 'running',
+    default   => 'stopped'
+  }
 
-    powerdns::recursor::option { 'setgid': value => $setgid }
-
-    powerdns::recursor::option { 'setuid': value => $setuid }
-
-    powerdns::recursor::option { 'quiet': value => $quiet }
-
-    service { 'pdns-recursor':
-      enable     => true,
-      ensure     => true,
-      hasrestart => true,
-      hasstatus  => false,
-      pattern    => '/usr/sbin/pdns_recursor',
-      provider   => 'upstart',
-      require    => Package['pdns-recursor'],
-    }
+  service { 'pdns-recursor':
+    ensure     => $ensure_service,
+    enable     => true,
+    hasrestart => true,
+    hasstatus  => true,
+    require    => Package[$package],
   }
 }
+

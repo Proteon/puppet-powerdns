@@ -6,15 +6,12 @@
 launch=gpgsql
 
 # gpgsql parameters
-<% if @socket %>
-    gpgsql-socket=<%=@socket%>
-<% else %>
-    gpgsql-host=<%= @host %>
-    gpgsql-port=<%= @port %>
-<% end -%>
+gpgsql-host=<%= @host %>
+gpgsql-port=<%= @port %>
 gpgsql-dbname=<%= @dbname %>
 gpgsql-user=<%= @user %>
 gpgsql-password=<%= @password %>
-<% if @dnssec%>
-gpgsql-dnssec
-<%end-%> 
+gpgsql-dnssec=<%= @dnssec %>
+<% if @osfamily == "RedHat" %>
+<%= @cfg_include_name %>=<%= @cfg_include_path %>
+<% end %>

@@ -11,16 +11,20 @@
 #      value  => 20,
 #    }
 #
-define powerdns::config($value, $ensure='present') {
+define powerdns::config(
+  $value,
+  $ensure = 'present',
+) {
 
-    file { "/etc/powerdns/pdns.d/${name}.conf":
-        ensure  => $ensure,
-        owner   => pdns,
-        group   => root,
-        mode    => '0700',
-        content => "${name}=${value}",
-        require => [File['/etc/powerdns/pdns.d'],Class['powerdns::package']],
-        notify  => Class['powerdns::service'],
-    }
+  file { "${name}.conf":
+    ensure  => $ensure,
+    path    => "${powerdns::params::cfg_include_path}/${name}.conf",
+    owner   => 'pdns',
+    group   => 'root',
+    mode    => '0600',
+    content => "${name}=${value}\n",
+    require => Class['powerdns::package'],
+    notify  => Class['powerdns::service'],
+  }
 
 }
